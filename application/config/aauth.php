@@ -97,7 +97,7 @@ $config_aauth["default"] = array(
  'perms'                          => 'aauth_perms',
  'perm_to_group'                  => 'aauth_perm_to_group',
  'perm_to_user'                   => 'aauth_perm_to_user',
- 'pms'                            => 'aauth_pms',
+ 'pms'                            => 'aauth_chatmsg',
  'user_variables'                 => 'aauth_user_variables',
  'login_attempts'                 => 'aauth_login_attempts',
 
