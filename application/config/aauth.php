@@ -100,6 +100,7 @@ $config_aauth["default"] = array(
  'pms'                            => 'aauth_chatmsg',
  'user_variables'                 => 'aauth_user_variables',
  'login_attempts'                 => 'aauth_login_attempts',
+ 'log'                            => 'aauth_log',
 
  'remember'                       => ' +3 days',
 
