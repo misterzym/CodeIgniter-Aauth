@@ -1352,12 +1352,6 @@ class Aauth {
 		$this->aauth_db->where('group_id', $group_id);
 		$this->aauth_db->delete($this->config_vars['perm_to_group']);
 
-		$this->aauth_db->where('group_id', $group_id);
-		$this->aauth_db->delete($this->config_vars['group_to_group']);
-
-		$this->aauth_db->where('subgroup_id', $group_id);
-		$this->aauth_db->delete($this->config_vars['group_to_group']);
-
 		$this->aauth_db->where('id', $group_id);
 		$this->aauth_db->delete($this->config_vars['groups']);
 
@@ -1420,76 +1414,6 @@ class Aauth {
 		$this->aauth_db->where('user_id', $user_id);
 		$this->aauth_db->where('group_id', $group_par);
 		return $this->aauth_db->delete($this->config_vars['user_to_group']);
-	}
-
-	/**
-	 * Add subgroup
-	 * Add a subgroup to a group
-	 * @param int $user_id User id to add to group
-	 * @param int|string $group_par Group id or name to add user to
-	 * @return bool Add success/failure
-	 */
-	public function add_subgroup($group_par, $subgroup_par) {
-
-		$group_id = $this->get_group_id($group_par);
-		$subgroup_id = $this->get_group_id($subgroup_par);
-
-		if( ! $group_id ) {
-			$this->error( $this->CI->lang->line('aauth_error_no_group') );
-			return false;
-		}
-
-		if( ! $subgroup_id ) {
-			$this->error( $this->CI->lang->line('aauth_error_no_subgroup') );
-			return false;
-		}
-
-        if ($group_groups = $this->get_subgroups($group_id)) {
-            foreach ($group_groups as $item) {
-                if ($item->subgroup_id == $subgroup_id) {
-                    return false;
-                }
-            }
-        }
-
-        if ($subgroup_groups = $this->get_subgroups($subgroup_id)) {
-            foreach ($subgroup_groups as $item) {
-                if ($item->subgroup_id == $group_id) {
-                    return false;
-                }
-            }
-        }
-
-		$query = $this->aauth_db->where('group_id',$group_id);
-		$query = $this->aauth_db->where('subgroup_id',$subgroup_id);
-		$query = $this->aauth_db->get($this->config_vars['group_to_group']);
-
-		if ($query->num_rows() < 1) {
-			$data = array(
-				'group_id' => $group_id,
-				'subgroup_id' => $subgroup_id,
-			);
-
-			return $this->aauth_db->insert($this->config_vars['group_to_group'], $data);
-		}
-		$this->info($this->CI->lang->line('aauth_info_already_subgroup'));
-		return true;
-	}
-
-	/**
-	 * Remove subgroup
-	 * Remove a subgroup from a group
-	 * @param int|string $group_par Group id or name to remove
-	 * @param int|string $subgroup_par Sub-Group id or name to remove
-	 * @return bool Remove success/failure
-	 */
-	public function remove_subgroup($group_par, $subgroup_par) {
-
-		$group_par = $this->get_group_id($group_par);
-		$subgroup_par = $this->get_group_id($subgroup_par);
-		$this->aauth_db->where('group_id', $group_par);
-		$this->aauth_db->where('subgroup_id', $subgroup_par);
-		return $this->aauth_db->delete($this->config_vars['group_to_group']);
 	}
 
 	//tested
@@ -1633,26 +1557,6 @@ class Aauth {
 		}
 
 		return false;
-	}
-
-	/**
-	 * Get subgroups
-	 * Get subgroups from group name or id ( ! Case sensitive)
-	 * @param int|string $group_par Group id or name to get
-	 * @return object Array of subgroup_id's
-	 */
-	public function get_subgroups ( $group_par ) {
-
-		$group_id = $this->get_group_id($group_par);
-
-		$query = $this->aauth_db->where('group_id', $group_id);
-		$query = $this->aauth_db->select('subgroup_id');
-		$query = $this->aauth_db->get($this->config_vars['group_to_group']);
-
-		if ($query->num_rows() == 0)
-			return false;
-
-		return $query->result();
 	}
 
 	########################
@@ -1835,20 +1739,12 @@ class Aauth {
 			if (strcasecmp($group_par, $this->config_vars['admin_group']) == 0)
 			{return true;}
 
-			$subgroup_ids = $this->get_subgroups($group_par);
 			$group_par = $this->get_group_id($group_par);
 			$query = $this->aauth_db->where('perm_id', $perm_id);
 			$query = $this->aauth_db->where('group_id', $group_par);
 			$query = $this->aauth_db->get( $this->config_vars['perm_to_group'] );
 
 			$g_allowed=false;
-			if(is_array($subgroup_ids)){
-				foreach ($subgroup_ids as $g ){
-					if($this->is_group_allowed($perm_id, $g->subgroup_id)){
-						$g_allowed=true;
-					}
-				}
-			}
 
 			if( $query->num_rows() > 0){
 				$g_allowed=true;
