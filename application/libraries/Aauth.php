@@ -1951,7 +1951,7 @@ class Aauth {
 			$this->error($this->CI->lang->line('aauth_error_self_pm'));
 			return false;
 		}
-		if (($this->is_banned($receiver_id) || !$this->user_exist_by_id($receiver_id)) || ($sender_id && ($this->is_banned($sender_id) || !$this->user_exist_by_id($sender_id)))){
+		if (($this->is_banned($receiver_id) || !$this->get_group_id($receiver_id)) || ($sender_id && ($this->is_banned($sender_id) || !$this->user_exist_by_id($sender_id)))){
 			$this->error($this->CI->lang->line('aauth_error_no_user'));
 			return false;
 		}
