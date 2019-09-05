@@ -2618,6 +2618,36 @@ class Aauth {
 			return true;
 		}
 	}
+	/**
+	 * Add log user text info
+	 * @param string $text ; is a log text
+	 * @param int $user_id ; if not given current user
+	 */
+	public function add_log_user($text,$user_id=false){
+		if (!$user_id){
+			$user_id=$this->CI->session->userdata('id');
+		}
+		$data=array(
+			'user_id'=>$user_id,
+			'text'=>$text,
+		);
+		$this->aauth_db->insert($this->config_vars['log'], $data);
+	}
+	/**
+	 * List User logs by UserID
+	 * Return array log or FALSE
+	 * @param int $user_id ; if not given current user
+	 * @return bool|array, FALSE if no user vars, otherwise array
+	 */
+	public function get_log_user($user_id=false){
+		$this->aauth_db->select('*')->from($this->config_vars['log']);
+		if ($user_id){
+			$this->aauth_db->where("user_id",$user_id);
+		}
+		$query = $this->aauth_db->get();
+
+		return $query->result();
+	}
 
 } // end class
 
