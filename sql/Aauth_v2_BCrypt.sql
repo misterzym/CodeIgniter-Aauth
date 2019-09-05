@@ -2,6 +2,7 @@
 	Aauth SQL Table Structure
 */
 
+
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
@@ -12,6 +13,41 @@
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `aauth_chatmsg`
+--
+
+DROP TABLE IF EXISTS `aauth_chatmsg`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `aauth_chatmsg` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `sender_id` int(11) unsigned NOT NULL,
+  `receiver_id` int(11) unsigned NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `message` text,
+  `date_sent` datetime DEFAULT NULL,
+  `date_read` datetime DEFAULT NULL,
+  `msg_deleted_sender` int(1) DEFAULT NULL,
+  `msg_deleted_receiver` int(1) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `full_index` (`id`,`sender_id`,`receiver_id`,`date_read`),
+  KEY `aauth_pms_FK` (`sender_id`),
+  KEY `aauth_pms_FK_1` (`receiver_id`),
+  CONSTRAINT `aauth_pms_FK` FOREIGN KEY (`sender_id`) REFERENCES `aauth_users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `aauth_pms_FK_1` FOREIGN KEY (`receiver_id`) REFERENCES `aauth_groups` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Сообщения из чатов';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `aauth_chatmsg`
+--
+
+LOCK TABLES `aauth_chatmsg` WRITE;
+/*!40000 ALTER TABLE `aauth_chatmsg` DISABLE KEYS */;
+/*!40000 ALTER TABLE `aauth_chatmsg` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `aauth_groups`
@@ -39,30 +75,54 @@ INSERT INTO `aauth_groups` VALUES (1,'Admin','Super Admin Group'),(2,'Public','P
 UNLOCK TABLES;
 
 --
--- Table structure for table `aauth_user_to_group`
+-- Table structure for table `aauth_log`
 --
 
-DROP TABLE IF EXISTS `aauth_user_to_group`;
+DROP TABLE IF EXISTS `aauth_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `aauth_user_to_group` (
-  `user_id` int(11) unsigned NOT NULL,
-  `group_id` int(11) unsigned NOT NULL,
-  PRIMARY KEY (`user_id`,`group_id`),
-  KEY `aauth_user_to_group_FK_1` (`group_id`),
-  CONSTRAINT `aauth_user_to_group_FK` FOREIGN KEY (`user_id`) REFERENCES `aauth_users` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `aauth_user_to_group_FK_1` FOREIGN KEY (`group_id`) REFERENCES `aauth_groups` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Связь пользователей и групп';
+CREATE TABLE `aauth_log` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int(10) unsigned NOT NULL,
+  `text` text NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `aauth_log_FK` (`user_id`),
+  CONSTRAINT `aauth_log_FK` FOREIGN KEY (`user_id`) REFERENCES `aauth_users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Логи пользователей';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `aauth_user_to_group`
+-- Dumping data for table `aauth_log`
 --
 
-LOCK TABLES `aauth_user_to_group` WRITE;
-/*!40000 ALTER TABLE `aauth_user_to_group` DISABLE KEYS */;
-INSERT INTO `aauth_user_to_group` VALUES (1,1),(1,3);
-/*!40000 ALTER TABLE `aauth_user_to_group` ENABLE KEYS */;
+LOCK TABLES `aauth_log` WRITE;
+/*!40000 ALTER TABLE `aauth_log` DISABLE KEYS */;
+/*!40000 ALTER TABLE `aauth_log` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `aauth_login_attempts`
+--
+
+DROP TABLE IF EXISTS `aauth_login_attempts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `aauth_login_attempts` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `ip_address` varchar(39) DEFAULT '0',
+  `timestamp` datetime DEFAULT NULL,
+  `login_attempts` tinyint(2) DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Неуспешные попытки авторизации';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `aauth_login_attempts`
+--
+
+LOCK TABLES `aauth_login_attempts` WRITE;
+/*!40000 ALTER TABLE `aauth_login_attempts` DISABLE KEYS */;
+/*!40000 ALTER TABLE `aauth_login_attempts` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -118,33 +178,6 @@ LOCK TABLES `aauth_perm_to_user` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `aauth_user_variables`
---
-
-DROP TABLE IF EXISTS `aauth_user_variables`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `aauth_user_variables` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) unsigned NOT NULL,
-  `data_key` varchar(100) NOT NULL,
-  `value` text,
-  PRIMARY KEY (`id`),
-  KEY `user_id_index` (`user_id`),
-  CONSTRAINT `aauth_user_variables_FK` FOREIGN KEY (`user_id`) REFERENCES `aauth_users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Пользовательские параметры';
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `aauth_user_variables`
---
-
-LOCK TABLES `aauth_user_variables` WRITE;
-/*!40000 ALTER TABLE `aauth_user_variables` DISABLE KEYS */;
-/*!40000 ALTER TABLE `aauth_user_variables` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `aauth_perms`
 --
 
@@ -169,63 +202,57 @@ LOCK TABLES `aauth_perms` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `aauth_login_attempts`
+-- Table structure for table `aauth_user_to_group`
 --
 
-DROP TABLE IF EXISTS `aauth_login_attempts`;
+DROP TABLE IF EXISTS `aauth_user_to_group`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `aauth_login_attempts` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `ip_address` varchar(39) DEFAULT '0',
-  `timestamp` datetime DEFAULT NULL,
-  `login_attempts` tinyint(2) DEFAULT '0',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Неуспешные попытки авторизации';
+CREATE TABLE `aauth_user_to_group` (
+  `user_id` int(11) unsigned NOT NULL,
+  `group_id` int(11) unsigned NOT NULL,
+  PRIMARY KEY (`user_id`,`group_id`),
+  KEY `aauth_user_to_group_FK_1` (`group_id`),
+  CONSTRAINT `aauth_user_to_group_FK` FOREIGN KEY (`user_id`) REFERENCES `aauth_users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `aauth_user_to_group_FK_1` FOREIGN KEY (`group_id`) REFERENCES `aauth_groups` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Связь пользователей и групп';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `aauth_login_attempts`
+-- Dumping data for table `aauth_user_to_group`
 --
 
-LOCK TABLES `aauth_login_attempts` WRITE;
-/*!40000 ALTER TABLE `aauth_login_attempts` DISABLE KEYS */;
-/*!40000 ALTER TABLE `aauth_login_attempts` ENABLE KEYS */;
+LOCK TABLES `aauth_user_to_group` WRITE;
+/*!40000 ALTER TABLE `aauth_user_to_group` DISABLE KEYS */;
+INSERT INTO `aauth_user_to_group` VALUES (1,1),(1,3);
+/*!40000 ALTER TABLE `aauth_user_to_group` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Table structure for table `aauth_pms`
+-- Table structure for table `aauth_user_variables`
 --
 
-DROP TABLE IF EXISTS `aauth_pms`;
+DROP TABLE IF EXISTS `aauth_user_variables`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `aauth_pms` (
+CREATE TABLE `aauth_user_variables` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `sender_id` int(11) unsigned NOT NULL,
-  `receiver_id` int(11) unsigned NOT NULL,
-  `title` varchar(255) NOT NULL,
-  `message` text,
-  `date_sent` datetime DEFAULT NULL,
-  `date_read` datetime DEFAULT NULL,
-  `pm_deleted_sender` int(1) DEFAULT NULL,
-  `pm_deleted_receiver` int(1) DEFAULT NULL,
+  `user_id` int(11) unsigned NOT NULL,
+  `data_key` varchar(100) NOT NULL,
+  `value` text,
   PRIMARY KEY (`id`),
-  KEY `full_index` (`id`,`sender_id`,`receiver_id`,`date_read`),
-  KEY `aauth_pms_FK` (`sender_id`),
-  KEY `aauth_pms_FK_1` (`receiver_id`),
-  CONSTRAINT `aauth_pms_FK` FOREIGN KEY (`sender_id`) REFERENCES `aauth_users` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `aauth_pms_FK_1` FOREIGN KEY (`receiver_id`) REFERENCES `aauth_users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Личные сообщения';
+  KEY `user_id_index` (`user_id`),
+  CONSTRAINT `aauth_user_variables_FK` FOREIGN KEY (`user_id`) REFERENCES `aauth_users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Пользовательские параметры';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `aauth_pms`
+-- Dumping data for table `aauth_user_variables`
 --
 
-LOCK TABLES `aauth_pms` WRITE;
-/*!40000 ALTER TABLE `aauth_pms` DISABLE KEYS */;
-/*!40000 ALTER TABLE `aauth_pms` ENABLE KEYS */;
+LOCK TABLES `aauth_user_variables` WRITE;
+/*!40000 ALTER TABLE `aauth_user_variables` DISABLE KEYS */;
+/*!40000 ALTER TABLE `aauth_user_variables` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -263,6 +290,10 @@ LOCK TABLES `aauth_users` WRITE;
 INSERT INTO `aauth_users` VALUES (1,'admin@example.com','$2y$10$h19Lblcr6amOIUL1TgYW2.VVZOhac/e1kHMgAwCubMTlYXZrL0wS2','Admin',0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'0');
 /*!40000 ALTER TABLE `aauth_users` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Dumping routines for database 'roundcubemail'
+--
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
